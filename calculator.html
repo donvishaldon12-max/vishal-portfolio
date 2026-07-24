@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Calculator | Vishal Prajapati</title>
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #2a364f;
+            --primary-color: #38bdf8;
+            --secondary-color: #a855f7;
+            --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #a855f7 100%);
+            --btn-bg: #1e293b;
+            --btn-hover: #334155;
+            --glow: rgba(56, 189, 248, 0.4);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .calculator {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+            width: 320px;
+            box-shadow: 0 0 35px var(--glow), 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .display {
+            width: 100%;
+            height: 70px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 2rem;
+            text-align: right;
+            padding: 10px 15px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+            outline: none;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        button {
+            height: 60px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--btn-bg);
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--btn-hover);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 0 12px var(--glow);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .operator {
+            color: var(--primary-color);
+        }
+
+        .clear {
+            color: #ef4444;
+        }
+
+        .equal {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border: none;
+            grid-column: span 2;
+        }
+
+        .equal:hover {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.6);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <input type="text" class="display" id="display" readonly value="0">
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button class="operator" onclick="deleteChar()">&larr;</button>
+            <button class="operator" onclick="appendOperator('/')">&divide;</button>
+            <button class="operator" onclick="appendOperator('*')">&times;</button>
+
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('-')">&minus;</button>
+
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="appendOperator('+')">+</button>
+
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button onclick="appendNumber('.')">.</button>
+
+            <button onclick="appendNumber('0')">0</button>
+            <button class="equal" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+
+        function appendNumber(num) {
+            if (display.value === '0' && num !== '.') {
+                display.value = num;
+            } else {
+                display.value += num;
+            }
+        }
+
+        function appendOperator(op) {
+            const lastChar = display.value.slice(-1);
+            if (['+', '-', '*', '/'].includes(lastChar)) {
+                display.value = display.value.slice(0, -1) + op;
+            } else {
+                display.value += op;
+            }
+        }
+
+        function clearDisplay() {
+            display.value = '0';
+        }
+
+        function deleteChar() {
+            if (display.value.length === 1 || display.value === 'Error') {
+                display.value = '0';
+            } else {
+                display.value = display.value.slice(0, -1);
+            }
+        }
+
+        function calculate() {
+            try {
+                display.value = eval(display.value);
+            } catch (error) {
+                display.value = 'Error';
+            }
+        }
+    </script>
+</body>
+</html>

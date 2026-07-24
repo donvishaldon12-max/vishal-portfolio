@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Planner | Vishal Prajapati</title>
+     <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #38bdf8;
+            --border-color: #334155;
+            --glow-color: rgba(56, 189, 248, 0.4);
+            --danger-color: #ef4444;
+            --success-color: #22c55e;
+            --warning-color: #f59e0b;
+        }
+         
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .planner-container {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            text-shadow: 0 0 15px var(--glow-color);
+        }
+
+        /* Task Creation Form */
+        .task-form {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .task-input {
+            flex: 2;
+            min-width: 200px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .task-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px var(--glow-color);
+        }
+
+        .select-input {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .add-btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            background-color: var(--primary-color);
+            color: #0f172a;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.3s;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px var(--glow-color);
+        }
+
+        /* Board Columns Layout */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .column {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .column-header {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .task-count {
+            background-color: var(--border-color);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .task-list {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Individual Task Card */
+        .task-card {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 15px;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            position: relative;
+        }
+
+        .task-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 12px var(--glow-color);
+        }
+
+        .task-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .task-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .priority-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .priority-high { background-color: rgba(239, 68, 68, 0.2); color: var(--danger-color); }
+        .priority-medium { background-color: rgba(245, 158, 11, 0.2); color: var(--warning-color); }
+        .priority-low { background-color: rgba(34, 197, 94, 0.2); color: var(--success-color); }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: var(--primary-color);
+        }
+
+        .delete-btn:hover {
+            color: var(--danger-color);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        } 
+    </style> 
+</head>
+<body>
+
+    <div class="planner-container">
+        <div class="header">
+            <h1>Interactive Task Planner</h1>
+            <p style="color: var(--text-muted);">Organize, track, and complete your projects effortlessly</p>
+        </div>
+
+        <!-- Task Creation Form -->
+        <form id="task-form" class="task-form">
+            <input type="text" id="task-input" class="task-input" placeholder="Enter new task description..." required>
+            
+            <select id="priority-input" class="select-input">
+                <option value="low">Low Priority</option>
+                <option value="medium" selected>Medium Priority</option>
+                <option value="high">High Priority</option>
+            </select>
+
+            <select id="status-input" class="select-input">
+                <option value="todo">To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+
+            <button type="submit" class="add-btn">+ Add Task</button>
+        </form>
+
+        <!-- Board Grid -->
+        <div class="board">
+            
+            <!-- Column 1: To Do -->
+            <div class="column" data-status="todo">
+                <div class="column-header">
+                    <span>📋 To Do</span>
+                    <span class="task-count" id="count-todo">0</span>
+                </div>
+                <div class="task-list" id="list-todo"></div>
+            </div>
+
+            <!-- Column 2: In Progress -->
+            <div class="column" data-status="in-progress">
+                <div class="column-header">
+                    <span>⚡ In Progress</span>
+                    <span class="task-count" id="count-in-progress">0</span>
+                </div>
+                <div class="task-list" id="list-in-progress"></div>
+            </div>
+
+            <!-- Column 3: Completed -->
+            <div class="column" data-status="completed">
+                <div class="column-header">
+                    <span>✅ Completed</span>
+                    <span class="task-count" id="count-completed">0</span>
+                </div>
+                <div class="task-list" id="list-completed"></div>
+            </div>
+
+        </div>
+
+        <div style="text-align: center;">
+            <a href="myportfolio.html" class="back-link">&larr; Back to Portfolio</a>
+        </div>
+    </div>
+
+    <!-- <script>
+        // Data State & Local Storage Initialization
+        let tasks = JSON.parse(localStorage.getItem('vp_tasks')) || [
+            { id: '1', title: 'Design Landing Page Wireframe', priority: 'high', status: 'completed' },
+            { id: '2', title: 'Implement SQL Database Schema', priority: 'medium', status: 'in-progress' },
+            { id: '3', title: 'Build Weather API Feature', priority: 'low', status: 'todo' }
+        ];
+
+        const taskForm = document.getElementById('task-form');
+        const taskInput = document.getElementById('task-input');
+        const priorityInput = document.getElementById('priority-input');
+        const statusInput = document.getElementById('status-input');
+
+        function saveTasks() {
+            localStorage.setItem('vp_tasks', JSON.stringify(tasks));
+            renderBoard();
+        }
+
+        function renderBoard() {
+            const lists = {
+                'todo': document.getElementById('list-todo'),
+                'in-progress': document.getElementById('list-in-progress'),
+                'completed': document.getElementById('list-completed')
+            };
+
+            const counts = {
+                'todo': document.getElementById('count-todo'),
+                'in-progress': document.getElementById('count-in-progress'),
+                'completed': document.getElementById('count-completed')
+            };
+
+            // Clear existing lists
+            Object.values(lists).forEach(list => list.innerHTML = '');
+
+            const statusCounts = { 'todo': 0, 'in-progress': 0, 'completed': 0 };
+
+            tasks.forEach(task => {
+                statusCounts[task.status]++;
+                
+                const card = document.createElement('div');
+                card.className = 'task-card';
+                card.draggable = true;
+                card.dataset.id = task.id;
+
+                card.innerHTML = `
+                    <div class="task-title">${escapeHtml(task.title)}</div>
+                    <div class="task-footer">
+                        <span class="priority-badge priority-${task.priority}">${task.priority}</span>
+                        <div class="task-actions">
+                            <button class="action-btn move-btn" title="Move status">⇄</button>
+                            <button class="action-btn delete-btn" title="Delete task">🗑️</button>
+                        </div>
+                    </div>
+                `;
+
+                // Add Event Listeners for actions
+                card.querySelector('.delete-btn').addEventListener('click', () => deleteTask(task.id));
+                card.querySelector('.move-btn').addEventListener('click', () => moveTaskNext(task.id));
+                
+                // Drag and Drop listeners
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+
+                lists[task.status].appendChild(card);
+            });
+
+            // Update Counts
+            Object.keys(counts).forEach(key => {
+                counts[key].textContent = statusCounts[key];
+            });
+        }
+
+        function addTask(title, priority, status) {
+            const newTask = {
+                id: Date.now().toString(),
+                title,
+                priority,
+                status
+            };
+            tasks.push(newTask);
+            saveTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            saveTasks();
+        }
+
+        function moveTaskNext(id) {
+            const order = ['todo', 'in-progress', 'completed'];
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                const currentIndex = order.indexOf(task.status);
+                task.status = order[(currentIndex + 1) % order.length];
+                saveTasks();
+            }
+        }
+
+        // Form Submit Listener
+        taskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = taskInput.value.trim();
+            if (title) {
+                addTask(title, priorityInput.value, statusInput.value);
+                taskInput.value = '';
+            }
+        });
+
+        // Drag and Drop Logic
+        let draggedCardId = null;
+
+        function handleDragStart(e) {
+            draggedCardId = this.dataset.id;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            draggedCardId = null;
+        }
+
+        const columns = document.querySelectorAll('.column');
+        columns.forEach(col => {
+            col.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+            });
+
+            col.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const targetStatus = this.dataset.status;
+                const task = tasks.find(t => t.id === draggedCardId);
+                if (task && task.status !== targetStatus) {
+                    task.status = targetStatus;
+                    saveTasks();
+                }
+            });
+        });
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Initial Render
+        renderBoard();
+    </script> -->
+</body>
+</html>
